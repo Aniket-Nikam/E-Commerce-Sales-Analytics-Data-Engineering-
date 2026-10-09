@@ -8,6 +8,7 @@ This practical case study implements a local analytical data platform with Pytho
 
 - [Case study report (PDF)](docs/ECommerce_Sales_Analytics_DuckDB_Report.pdf)
 - [Technical presentation deck (12 slides, four-presenter split)](docs/ECommerce_Data_Engineering_RabbitMQ_Technical_Presentation.pptx)
+- [Slide-by-slide team speaking script, live-demo checklist, and viva preparation](docs/ECommerce_Presentation_Speaking_Script_Team.docx)
 - [Captured charts, KPI tables, query plans, and API metadata](evidence/)
 - Reproducible Python/SQL source code, test, Dockerfile, and Kubernetes manifests
 
@@ -22,7 +23,7 @@ This practical case study implements a local analytical data platform with Pytho
 | Optimize performance | ZSTD Parquet partitions, DuckDB indexes, thread controls, and `EXPLAIN ANALYZE` plans |
 | Capture results | Versioned dashboard screenshot, plots, KPI JSON/CSV, and plans in `evidence/` |
 | Analyze performance | CSV vs Parquet vs DuckDB benchmark at 1 and 4 threads |
-| Report, code, and PPT | PDF report, documented source code, and a 10-slide presentation |
+| Report, code, and PPT | PDF report, documented source code, 12-slide presentation, and four-person speaking script |
 | Bonus: real-time dataset / API | Validated FastAPI order events, durable RabbitMQ queue, idempotent consumer, and live DuckDB metrics |
 | Bonus: Kubernetes | Dashboard, API/consumer, RabbitMQ, simulator, Service, PVC, probes, HPA, and Kustomize configuration |
 | Bonus: compare execution modes | Storage-format and thread-count benchmark with an explicitly stated local-OLAP scope |
