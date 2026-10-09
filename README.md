@@ -7,7 +7,7 @@ This practical case study implements a local analytical data platform with Pytho
 ## Submission deliverables
 
 - [Case study report (PDF)](docs/ECommerce_Sales_Analytics_DuckDB_Report.pdf)
-- [Presentation deck (10 slides)](docs/ECommerce_DuckDB_Case_Study_Presentation.pptx)
+- [Technical presentation deck (12 slides, four-presenter split)](docs/ECommerce_Data_Engineering_RabbitMQ_Technical_Presentation.pptx)
 - [Captured charts, KPI tables, query plans, and API metadata](evidence/)
 - Reproducible Python/SQL source code, test, Dockerfile, and Kubernetes manifests
 
@@ -57,6 +57,18 @@ flowchart LR
 The API and consumer run in one service by default so a single process owns the real-time DuckDB file. Producer and consumer remain separate components in the code. The publisher requests broker confirms, the consumer acknowledges only after a successful insert, and `event_id` provides idempotency.
 
 ## Quick start
+
+### Windows one-click startup
+
+Double-click `Start_ECommerce_Platform.cmd`, or use the **Start E-Commerce Analytics.cmd** wrapper placed on the Desktop. The launcher prefers the complete RabbitMQ real-time stack, verifies its health, and opens the dashboard. If Docker Desktop cannot provide its Linux engine, it explicitly falls back to the historical DuckDB dashboard instead of claiming streaming is active. See [STARTUP_GUIDE.md](STARTUP_GUIDE.md) for modes, URLs, diagnostics, and shutdown instructions.
+
+Run a read-only startup audit at any time:
+
+```powershell
+.\Start_ECommerce_Platform.ps1 -CheckOnly
+```
+
+### Manual Python startup
 
 Create and activate a Python 3.11+ virtual environment, then run:
 
