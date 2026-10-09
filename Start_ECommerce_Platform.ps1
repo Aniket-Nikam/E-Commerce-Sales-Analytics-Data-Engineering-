@@ -208,6 +208,28 @@ function Show-StartupDiagnostics {
     return $diagnostics
 }
 
+function Stop-RecordedLocalDashboard {
+    $pidFile = Join-Path $LogDirectory "local-dashboard.pid"
+    if (-not (Test-Path -LiteralPath $pidFile)) {
+        return
+    }
+
+    $rawPid = (Get-Content -LiteralPath $pidFile -Raw).Trim()
+    [int]$dashboardPid = 0
+    if (-not [int]::TryParse($rawPid, [ref]$dashboardPid)) {
+        Remove-Item -LiteralPath $pidFile -Force -ErrorAction SilentlyContinue
+        return
+    }
+
+    $process = Get-CimInstance Win32_Process -Filter "ProcessId = $dashboardPid" -ErrorAction SilentlyContinue
+    if ($process -and $process.CommandLine -match "(?i)streamlit" -and $process.CommandLine -match "(?i)src[\\/]dashboard\.py") {
+        Write-Status "Stopping the launcher-owned historical dashboard before starting Docker..."
+        Stop-Process -Id $dashboardPid -Force -ErrorAction SilentlyContinue
+        Start-Sleep -Seconds 2
+    }
+    Remove-Item -LiteralPath $pidFile -Force -ErrorAction SilentlyContinue
+}
+
 function Start-DockerPlatform {
     if (-not (Test-CommandAvailable -Name "docker")) {
         throw "Docker is not installed. Install Docker Desktop or run with -Mode Local."
@@ -215,6 +237,8 @@ function Start-DockerPlatform {
     if (-not (Test-DockerEngine) -and -not (Start-DockerDesktop)) {
         throw "Docker's Linux engine is unavailable. Open Docker Desktop > Troubleshoot, then retry."
     }
+
+    Stop-RecordedLocalDashboard
 
     Write-Status "Validating Docker Compose configuration..."
     docker compose --profile demo config --quiet
@@ -280,7 +304,8 @@ function Start-LocalDashboard {
             "--server.headless", "true",
             "--browser.gatherUsageStats", "false"
         )
-        Start-Process -FilePath $python -ArgumentList $arguments -WorkingDirectory $ProjectRoot -WindowStyle Hidden | Out-Null
+        $dashboardProcess = Start-Process -FilePath $python -ArgumentList $arguments -WorkingDirectory $ProjectRoot -WindowStyle Hidden -PassThru
+        Set-Content -LiteralPath (Join-Path $LogDirectory "local-dashboard.pid") -Value $dashboardProcess.Id -Encoding ASCII
     }
 
     if (-not (Wait-HttpEndpoint -Url "http://127.0.0.1:8501" -TimeoutSeconds 90)) {
