@@ -1,0 +1,12 @@
+{
+  "revenue": 28777038.79,
+  "orders": 119044.0,
+  "customers": 37114.0,
+  "avg_line_value": 131.59,
+  "return_rate_pct": 7.11,
+  "repeat_customer_pct": 77.51,
+  "top_category": "Electronics",
+  "top_region": "South",
+  "top_customer": "C000002",
+  "grouping_set_rows": 42
+}

@@ -1,0 +1,57 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ecommerce-duckdb
+  namespace: ecommerce-analytics
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: ecommerce-duckdb
+  template:
+    metadata:
+      labels:
+        app: ecommerce-duckdb
+    spec:
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        fsGroup: 1000
+      containers:
+        - name: dashboard
+          image: ecommerce-duckdb:1.0
+          imagePullPolicy: IfNotPresent
+          ports:
+            - name: http
+              containerPort: 8501
+          resources:
+            requests:
+              cpu: 250m
+              memory: 512Mi
+            limits:
+              cpu: "1"
+              memory: 1Gi
+          startupProbe:
+            httpGet:
+              path: /_stcore/health
+              port: http
+            failureThreshold: 20
+            periodSeconds: 5
+          readinessProbe:
+            httpGet:
+              path: /_stcore/health
+              port: http
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /_stcore/health
+              port: http
+            periodSeconds: 20
+          volumeMounts:
+            - name: analytics-data
+              mountPath: /app/artifacts
+      volumes:
+        - name: analytics-data
+          persistentVolumeClaim:
+            claimName: ecommerce-duckdb-data
+

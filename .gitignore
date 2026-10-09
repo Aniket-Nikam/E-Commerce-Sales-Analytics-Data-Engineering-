@@ -1,0 +1,12 @@
+__pycache__/
+.pytest_cache/
+.pytest-tmp*/
+.venv/
+data/raw/*
+data/external/*
+artifacts/*
+results/*
+!data/raw/.gitkeep
+!data/external/.gitkeep
+!artifacts/.gitkeep
+!results/.gitkeep

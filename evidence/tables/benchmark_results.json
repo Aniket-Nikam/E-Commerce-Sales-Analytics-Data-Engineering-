@@ -1,0 +1,50 @@
+[
+  {
+    "storage": "CSV",
+    "threads": 1,
+    "median_ms": 674.031,
+    "min_ms": 665.54,
+    "max_ms": 688.396,
+    "runs": 5
+  },
+  {
+    "storage": "Parquet",
+    "threads": 1,
+    "median_ms": 104.65,
+    "min_ms": 100.067,
+    "max_ms": 118.481,
+    "runs": 5
+  },
+  {
+    "storage": "DuckDB",
+    "threads": 1,
+    "median_ms": 44.775,
+    "min_ms": 42.669,
+    "max_ms": 48.432,
+    "runs": 5
+  },
+  {
+    "storage": "CSV",
+    "threads": 4,
+    "median_ms": 330.05,
+    "min_ms": 323.678,
+    "max_ms": 333.697,
+    "runs": 5
+  },
+  {
+    "storage": "Parquet",
+    "threads": 4,
+    "median_ms": 57.009,
+    "min_ms": 49.927,
+    "max_ms": 60.355,
+    "runs": 5
+  },
+  {
+    "storage": "DuckDB",
+    "threads": 4,
+    "median_ms": 29.319,
+    "min_ms": 27.484,
+    "max_ms": 30.068,
+    "runs": 5
+  }
+]

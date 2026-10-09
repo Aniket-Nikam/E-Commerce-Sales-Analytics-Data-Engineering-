@@ -1,0 +1,14 @@
+{
+  "raw_rows": 250250,
+  "typed_rows": 250000,
+  "clean_rows": 248555,
+  "rejected_rows": 1445,
+  "orders": 119044,
+  "customers": 37114,
+  "products": 48,
+  "min_date": "2024-01-01T00:16:00",
+  "max_date": "2025-12-31T23:38:00",
+  "duration_seconds": 7.061,
+  "database_mb": 22.012,
+  "parquet_mb": 6.666
+}

@@ -1,0 +1,43 @@
+region,category,revenue,region_total,category_total
+South,Electronics,1760668.25,0,0
+North,Electronics,1674511.48,0,0
+West,Electronics,1671809.03,0,0
+South,Home,1655745.11,0,0
+West,Home,1627803.96,0,0
+North,Home,1608043.87,0,0
+East,Electronics,1495467.11,0,0
+East,Home,1490822.75,0,0
+Central,Electronics,1088269.79,0,0
+South,Fashion,1078770.04,0,0
+North,Fashion,1044138.06,0,0
+Central,Home,1031674.1,0,0
+West,Fashion,1027987.78,0,0
+East,Fashion,943442.91,0,0
+South,Sports,830738.76,0,0
+West,Sports,793517.88,0,0
+North,Sports,784668.2,0,0
+East,Sports,720425.53,0,0
+Central,Fashion,682849.33,0,0
+South,Beauty,640469.08,0,0
+North,Beauty,629894.63,0,0
+West,Beauty,611376.34,0,0
+East,Beauty,549813.81,0,0
+South,Books,547255.48,0,0
+North,Books,528450.97,0,0
+West,Books,526370.48,0,0
+Central,Sports,523755.94,0,0
+East,Books,481842.5,0,0
+Central,Beauty,389645.81,0,0
+Central,Books,336809.81,0,0
+South,ALL CATEGORIES,6513646.72,0,1
+North,ALL CATEGORIES,6269707.21,0,1
+West,ALL CATEGORIES,6258865.47,0,1
+East,ALL CATEGORIES,5681814.61,0,1
+Central,ALL CATEGORIES,4053004.78,0,1
+ALL REGIONS,Electronics,7690725.66,1,0
+ALL REGIONS,Home,7414089.79,1,0
+ALL REGIONS,Fashion,4777188.12,1,0
+ALL REGIONS,Sports,3653106.31,1,0
+ALL REGIONS,Beauty,2821199.67,1,0
+ALL REGIONS,Books,2420729.24,1,0
+ALL REGIONS,ALL CATEGORIES,28777038.79,1,1

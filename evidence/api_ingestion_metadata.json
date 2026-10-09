@@ -1,0 +1,10 @@
+{
+  "source": "https://dummyjson.com",
+  "observed_at_utc": "2026-10-08T18:42:14+00:00",
+  "products": 194,
+  "carts": 208,
+  "flattened_cart_items": 800,
+  "loaded_to_duckdb": 800,
+  "raw_json": "C:\\Users\\Aniket\\Documents\\Codex\\2026-10-08\\i-x20\\work\\ECommerce_Sales_Analytics_DuckDB\\data\\external\\dummyjson_snapshot_20261008T184216Z.json",
+  "csv": "C:\\Users\\Aniket\\Documents\\Codex\\2026-10-08\\i-x20\\work\\ECommerce_Sales_Analytics_DuckDB\\data\\external\\dummyjson_cart_items_latest.csv"
+}
