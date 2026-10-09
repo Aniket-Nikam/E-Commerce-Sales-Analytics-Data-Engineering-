@@ -113,7 +113,7 @@ docker compose --profile demo up --build
 Then open:
 
 - Dashboard: `http://localhost:8501`
-- FastAPI documentation: `http://localhost:8000/docs`
+- FastAPI documentation: `http://localhost:8001/docs` (container port `8000`)
 - RabbitMQ management: `http://localhost:15672` (`ecommerce` / `ecommerce-demo`)
 
 The simulator sends one new order per second. The API returns HTTP 202 after RabbitMQ confirms the event. The consumer validates it again, inserts it into `streaming.order_events`, acknowledges the message, and ignores duplicate event IDs. The live section of the dashboard refreshes every five seconds.
@@ -123,8 +123,8 @@ To run a finite demonstration instead of the continuous Compose profile:
 ```bash
 docker compose up --build rabbitmq realtime-api dashboard
 python -m src.realtime.simulator --events 50 --interval 0.5
-curl http://localhost:8000/metrics
-curl "http://localhost:8000/orders/recent?limit=10"
+curl http://localhost:8001/metrics
+curl "http://localhost:8001/orders/recent?limit=10"
 ```
 
 ## Dashboard questions

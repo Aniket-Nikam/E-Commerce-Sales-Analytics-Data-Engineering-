@@ -197,7 +197,7 @@ function Show-StartupDiagnostics {
         PythonAvailable = $null -ne (Get-SystemPython)
         HistoricalWarehousePresent = Test-Path -LiteralPath (Join-Path $ProjectRoot "artifacts\ecommerce.duckdb")
         DashboardAlreadyRunning = Test-HttpEndpoint -Url "http://127.0.0.1:8501"
-        StrictRealtimeReady = Test-HttpEndpoint -Url "http://127.0.0.1:8000/health"
+        StrictRealtimeReady = Test-HttpEndpoint -Url "http://127.0.0.1:8001/health"
         StartupLog = $LogFile
     }
 
@@ -229,7 +229,7 @@ function Start-DockerPlatform {
     }
 
     Write-Status "Waiting for the real-time API..."
-    if (-not (Wait-HttpEndpoint -Url "http://127.0.0.1:8000/health" -TimeoutSeconds 180)) {
+    if (-not (Wait-HttpEndpoint -Url "http://127.0.0.1:8001/health" -TimeoutSeconds 180)) {
         throw "The real-time API did not become healthy. Run: docker compose logs realtime-api"
     }
     Write-Status "Real-time API and RabbitMQ consumer are healthy." "OK"
@@ -242,7 +242,7 @@ function Start-DockerPlatform {
     Write-Status "STRICT REAL-TIME MODE IS ACTIVE." "OK"
     Write-Host ""
     Write-Host "Dashboard:          http://127.0.0.1:8501" -ForegroundColor Green
-    Write-Host "API documentation:  http://127.0.0.1:8000/docs" -ForegroundColor Green
+    Write-Host "API documentation:  http://127.0.0.1:8001/docs" -ForegroundColor Green
     Write-Host "RabbitMQ management: http://127.0.0.1:15672" -ForegroundColor Green
     Write-Host "RabbitMQ login:      ecommerce / ecommerce-demo" -ForegroundColor Green
     Write-Host "Stop command:        docker compose --profile demo down" -ForegroundColor Yellow

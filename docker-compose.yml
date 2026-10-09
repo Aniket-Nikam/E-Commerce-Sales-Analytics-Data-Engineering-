@@ -25,7 +25,7 @@ services:
       REALTIME_DB_PATH: /app/artifacts/realtime.duckdb
       REALTIME_EMBED_CONSUMER: "true"
     ports:
-      - "8000:8000"
+      - "8001:8000"
     depends_on:
       rabbitmq:
         condition: service_healthy

@@ -30,7 +30,7 @@ Run these from PowerShell in the project directory:
 ## URLs in strict real-time mode
 
 - Dashboard: `http://127.0.0.1:8501`
-- FastAPI and interactive API documentation: `http://127.0.0.1:8000/docs`
+- FastAPI and interactive API documentation: `http://127.0.0.1:8001/docs` (mapped to container port `8000`)
 - RabbitMQ management: `http://127.0.0.1:15672`
 - Classroom RabbitMQ login: `ecommerce` / `ecommerce-demo`
 
@@ -46,5 +46,5 @@ The RabbitMQ and analytics Docker volumes remain available for the next run. Add
 
 ## Current machine note
 
-The code, Compose model, Kubernetes model, and tests validate, but Docker Desktop previously stopped before its Linux engine became available. The launcher does not hide this distinction: strict real-time mode is reported as active only after `http://127.0.0.1:8000/health` responds. If Docker still fails, use Docker Desktop's **Troubleshoot** page to repair or reset the engine, then run the launcher again.
+The launcher reports strict real-time mode as active only after `http://127.0.0.1:8001/health` responds. Port `8001` is used on Windows because another local application may already own port `8000`; containers and Kubernetes continue to use port `8000` internally. If Docker still fails, use Docker Desktop's **Troubleshoot** page to repair or reset the engine, then run the launcher again.
 
