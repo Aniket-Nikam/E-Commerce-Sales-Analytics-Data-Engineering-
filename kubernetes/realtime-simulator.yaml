@@ -1,0 +1,35 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: realtime-simulator
+  namespace: ecommerce-analytics
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: realtime-simulator
+  template:
+    metadata:
+      labels:
+        app: realtime-simulator
+    spec:
+      containers:
+        - name: simulator
+          image: ecommerce-duckdb:1.0
+          imagePullPolicy: IfNotPresent
+          command: ["python", "-m", "src.realtime.simulator"]
+          args:
+            - --api-url
+            - http://realtime-api:8000
+            - --events
+            - "0"
+            - --interval
+            - "1"
+          resources:
+            requests:
+              cpu: 25m
+              memory: 64Mi
+            limits:
+              cpu: 100m
+              memory: 128Mi
+

@@ -1,6 +1,6 @@
 # E-Commerce Sales Analytics using DuckDB
 
-This practical case study implements a local analytical data platform with Python, SQL, DuckDB, CSV, Parquet, Streamlit, a public e-commerce API, Docker, and Kubernetes manifests.
+This practical case study implements a local analytical data platform with Python, SQL, DuckDB, CSV, Parquet, Streamlit, FastAPI, RabbitMQ, Docker, and Kubernetes.
 
 ![Streamlit analytics dashboard](evidence/dashboard_full.png)
 
@@ -23,8 +23,8 @@ This practical case study implements a local analytical data platform with Pytho
 | Capture results | Versioned dashboard screenshot, plots, KPI JSON/CSV, and plans in `evidence/` |
 | Analyze performance | CSV vs Parquet vs DuckDB benchmark at 1 and 4 threads |
 | Report, code, and PPT | PDF report, documented source code, and a 10-slide presentation |
-| Bonus: real-time dataset / API | Public API ingestion command and captured snapshot metadata |
-| Bonus: Kubernetes | Deployment, Service, PVC, probes, HPA, and Kustomize configuration |
+| Bonus: real-time dataset / API | Validated FastAPI order events, durable RabbitMQ queue, idempotent consumer, and live DuckDB metrics |
+| Bonus: Kubernetes | Dashboard, API/consumer, RabbitMQ, simulator, Service, PVC, probes, HPA, and Kustomize configuration |
 | Bonus: compare execution modes | Storage-format and thread-count benchmark with an explicitly stated local-OLAP scope |
 
 ## What the project demonstrates
@@ -38,7 +38,23 @@ This practical case study implements a local analytical data platform with Pytho
 - Benchmarks CSV, partitioned Parquet, and DuckDB tables with 1 and 4 threads.
 - Builds a Streamlit dashboard with filters and decision-focused charts.
 - Ingests a current public API snapshot from DummyJSON as a bonus extension.
-- Includes a container image and Kubernetes deployment, service, PVC, probes, and HPA.
+- Streams validated order events through RabbitMQ into an idempotent DuckDB staging table.
+- Refreshes live event metrics and recent orders in Streamlit every five seconds.
+- Includes Docker Compose and Kubernetes deployments for the complete streaming path.
+
+## Real-time architecture
+
+```mermaid
+flowchart LR
+    S[Order simulator or client] -->|POST /orders| A[FastAPI producer]
+    A -->|persistent JSON message| Q[(RabbitMQ durable queue)]
+    Q --> C[Python consumer]
+    C -->|event_id deduplication| D[(DuckDB real-time staging)]
+    D --> M[FastAPI metrics endpoints]
+    M -->|refresh every 5 seconds| B[Streamlit dashboard]
+```
+
+The API and consumer run in one service by default so a single process owns the real-time DuckDB file. Producer and consumer remain separate components in the code. The publisher requests broker confirms, the consumer acknowledges only after a successful insert, and `event_id` provides idempotency.
 
 ## Quick start
 
@@ -73,6 +89,31 @@ python -m src.cli build --input path/to/orders.csv
 
 The replacement CSV should contain the columns listed in `src/config.py` under `RAW_COLUMNS`.
 
+## Strict real-time demonstration
+
+Start RabbitMQ, the API/consumer, the dashboard, and the continuous producer:
+
+```bash
+docker compose --profile demo up --build
+```
+
+Then open:
+
+- Dashboard: `http://localhost:8501`
+- FastAPI documentation: `http://localhost:8000/docs`
+- RabbitMQ management: `http://localhost:15672` (`ecommerce` / `ecommerce-demo`)
+
+The simulator sends one new order per second. The API returns HTTP 202 after RabbitMQ confirms the event. The consumer validates it again, inserts it into `streaming.order_events`, acknowledges the message, and ignores duplicate event IDs. The live section of the dashboard refreshes every five seconds.
+
+To run a finite demonstration instead of the continuous Compose profile:
+
+```bash
+docker compose up --build rabbitmq realtime-api dashboard
+python -m src.realtime.simulator --events 50 --interval 0.5
+curl http://localhost:8000/metrics
+curl "http://localhost:8000/orders/recent?limit=10"
+```
+
 ## Dashboard questions
 
 1. How are revenue and order volume changing by month?
@@ -91,15 +132,20 @@ python -m src.cli api-ingest
 
 This calls the DummyJSON products and carts endpoints, preserves the raw JSON response, flattens cart items to CSV, and loads the snapshot into the DuckDB table `api_cart_items` when the database exists.
 
+### Event-driven order ingestion
+
+The real-time path is stricter than API polling: every submitted order becomes a persistent RabbitMQ message and passes through a consumer before reaching the staging table. Invalid API payloads return HTTP 422. Invalid queued messages go to `results/logs/realtime_dead_letters.ndjson`, and transient database failures are requeued.
+
 ### Kubernetes
 
 ```bash
 docker build -t ecommerce-duckdb:1.0 .
 kubectl apply -k kubernetes/
 kubectl -n ecommerce-analytics port-forward svc/ecommerce-duckdb 8501:80
+kubectl -n ecommerce-analytics port-forward svc/realtime-api 8000:8000
 ```
 
-The Deployment uses Streamlit's health endpoint for startup, readiness, and liveness probes. The PVC persists the DuckDB database and generated artifacts. The HPA requires the Kubernetes Metrics Server.
+The manifests deploy RabbitMQ, a demo credential Secret, the API with its embedded consumer, a continuous event simulator, and the dashboard. HTTP and broker probes verify health. The PVC persists both DuckDB databases. Replace the demonstration Secret before using the manifests outside a classroom environment. The HPA requires the Kubernetes Metrics Server.
 
 ### Performance modes
 
@@ -108,10 +154,12 @@ The benchmark varies both storage format and DuckDB thread count. DuckDB is an i
 ## Project structure
 
 ```text
-src/                 Python pipeline, analytics, benchmark, API, dashboard, CLI
+src/                 Python pipeline, analytics, benchmark, dashboard, CLI
+src/realtime/        FastAPI producer, RabbitMQ consumer, simulator, validation, staging store
 sql/                 Schema, views, analytical SQL, and OLAP patterns
 tests/               Reproducible smoke test
 kubernetes/          Kubernetes manifests and Kustomize file
+docker-compose.yml   Complete local real-time stack
 data/                 Generated or API source data (created at runtime)
 artifacts/            DuckDB and partitioned Parquet (created at runtime)
 results/              Query outputs, plots, plans, metrics, and logs
@@ -121,4 +169,4 @@ docs/                 Final report and presentation
 
 ## Data note
 
-The core dataset is synthetic and deterministic so the implementation runs without credentials or a large download. It intentionally contains missing values, duplicates, invalid quantities, and inconsistent text values. The API extension provides current public e-commerce data for the bonus requirement. Neither dataset represents a real company's financial results.
+The historical dataset is synthetic and deterministic so the implementation runs without credentials or a large download. It intentionally contains missing values, duplicates, invalid quantities, and inconsistent text values. The live simulator generates new order events for a controlled streaming demonstration, while the DummyJSON extension supplies a current public API snapshot. None of these sources represents a real company's financial results.

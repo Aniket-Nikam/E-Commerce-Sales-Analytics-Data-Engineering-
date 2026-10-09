@@ -13,6 +13,7 @@ LOGS_DIR = RESULTS_DIR / "logs"
 
 RAW_CSV = RAW_DIR / "ecommerce_orders.csv"
 DB_PATH = ARTIFACT_DIR / "ecommerce.duckdb"
+REALTIME_DB_PATH = ARTIFACT_DIR / "realtime.duckdb"
 PARQUET_DIR = ARTIFACT_DIR / "sales_parquet"
 
 RAW_COLUMNS = [
@@ -47,4 +48,3 @@ def ensure_directories() -> None:
         LOGS_DIR,
     ):
         path.mkdir(parents=True, exist_ok=True)
-

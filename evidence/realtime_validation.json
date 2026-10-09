@@ -1,0 +1,28 @@
+{
+  "validated_at": "2026-10-09T02:20:00Z",
+  "implementation": {
+    "producer": "FastAPI POST /orders",
+    "broker": "RabbitMQ durable queue",
+    "consumer": "Python pika consumer with manual acknowledgements",
+    "staging_table": "streaming.order_events in realtime.duckdb",
+    "dashboard_refresh_seconds": 5
+  },
+  "automated_tests": {
+    "result": "4 passed",
+    "checks": [
+      "historical CSV-to-DuckDB pipeline",
+      "real-time event idempotency",
+      "invalid payload rejection",
+      "durable queue and persistent message configuration"
+    ]
+  },
+  "configuration_validation": {
+    "docker_compose": "valid",
+    "kubernetes_kustomize": "valid"
+  },
+  "container_runtime_validation": {
+    "status": "not executed on this host",
+    "reason": "Docker Desktop engine crashed before startup because its internal dockerInference socket was inaccessible",
+    "claim_boundary": "No successful RabbitMQ container run is claimed by this evidence file"
+  }
+}

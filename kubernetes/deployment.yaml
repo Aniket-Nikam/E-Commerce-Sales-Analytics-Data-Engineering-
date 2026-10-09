@@ -17,6 +17,16 @@ spec:
         runAsNonRoot: true
         runAsUser: 1000
         fsGroup: 1000
+      initContainers:
+        - name: warehouse-init
+          image: ecommerce-duckdb:1.0
+          imagePullPolicy: IfNotPresent
+          command: ["sh", "-c"]
+          args:
+            - test -f /app/artifacts/ecommerce.duckdb || python -m src.cli all --rows 100000 --runs 3
+          volumeMounts:
+            - name: analytics-data
+              mountPath: /app/artifacts
       containers:
         - name: dashboard
           image: ecommerce-duckdb:1.0
@@ -24,6 +34,9 @@ spec:
           ports:
             - name: http
               containerPort: 8501
+          env:
+            - name: REALTIME_API_URL
+              value: http://realtime-api:8000
           resources:
             requests:
               cpu: 250m
@@ -54,4 +67,3 @@ spec:
         - name: analytics-data
           persistentVolumeClaim:
             claimName: ecommerce-duckdb-data
-

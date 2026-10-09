@@ -12,6 +12,5 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY . .
 RUN python -m src.cli all --rows 100000 --runs 3
 
-EXPOSE 8501
+EXPOSE 8000 8501
 CMD ["streamlit", "run", "src/dashboard.py"]
-

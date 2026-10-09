@@ -1,12 +1,15 @@
 from __future__ import annotations
 
+import os
 import sys
 from pathlib import Path
 
 import duckdb
 import pandas as pd
 import plotly.express as px
+import requests
 import streamlit as st
+import streamlit.components.v1 as components
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from src.config import DB_PATH
@@ -130,3 +133,59 @@ st.dataframe(
         "units": st.column_config.NumberColumn("Units", format="%d"),
     },
 )
+
+st.divider()
+st.subheader("Live order stream")
+st.caption("FastAPI validates each order, RabbitMQ transports it, and the consumer writes it once to DuckDB.")
+
+
+def live_order_panel() -> None:
+    api_url = os.getenv("REALTIME_API_URL", "http://localhost:8000").rstrip("/")
+    try:
+        metrics_response = requests.get(f"{api_url}/metrics", timeout=3)
+        recent_response = requests.get(f"{api_url}/orders/recent?limit=10", timeout=3)
+        metrics_response.raise_for_status()
+        recent_response.raise_for_status()
+    except requests.RequestException:
+        st.info(
+            "Real-time service is offline. Start it with `docker compose up --build`, "
+            "then generate events with the simulator profile."
+        )
+        return
+
+    live = metrics_response.json()
+    r1, r2, r3, r4 = st.columns(4)
+    r1.metric("Streamed events", f"{live['total_events']:,}")
+    r2.metric("Events in 60 seconds", f"{live['events_last_60_seconds']:,}")
+    r3.metric("Live customers", f"{live['live_customers']:,}")
+    r4.metric("Stream revenue", compact_money(float(live["live_revenue"])))
+
+    recent = pd.DataFrame(recent_response.json())
+    if recent.empty:
+        st.caption("Waiting for the first order event...")
+        return
+    display_columns = [
+        "event_time",
+        "order_id",
+        "category",
+        "quantity",
+        "net_revenue",
+        "region",
+        "sales_channel",
+    ]
+    st.dataframe(
+        recent[display_columns],
+        width="stretch",
+        hide_index=True,
+        column_config={
+            "event_time": "Event time (UTC)",
+            "net_revenue": st.column_config.NumberColumn("Revenue", format="$%.2f"),
+        },
+    )
+    components.html(
+        "<script>setTimeout(() => window.parent.location.reload(), 5000);</script>",
+        height=0,
+    )
+
+
+live_order_panel()
