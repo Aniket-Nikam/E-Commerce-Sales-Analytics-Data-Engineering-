@@ -6,9 +6,10 @@ This practical case study implements a local analytical data platform with Pytho
 
 ## Submission deliverables
 
-- [Case study report (PDF)](docs/ECommerce_Sales_Analytics_DuckDB_Report.pdf)
-- [Technical presentation deck (12 slides, four-presenter split)](docs/ECommerce_Data_Engineering_RabbitMQ_Technical_Presentation.pptx)
-- [Slide-by-slide team speaking script, live-demo checklist, and viva preparation](docs/ECommerce_Presentation_Speaking_Script_Team.docx)
+- [Final practical case study report (PDF)](docs/ECommerce_Data_Engineering_Practical_Case_Study_Report.pdf)
+- [Final presentation deck (11 slides, four-presenter split)](docs/ECommerce_Data_Engineering_Practical_Case_Study_Presentation.pptx)
+- [Final slide-by-slide speaking script, live-demo checklist, and viva preparation](docs/ECommerce_Data_Engineering_Presentation_Script.docx)
+- [Presentation-day runbook](PRESENTATION_DAY_RUNBOOK.md)
 - [Captured charts, KPI tables, query plans, and API metadata](evidence/)
 - Reproducible Python/SQL source code, test, Dockerfile, and Kubernetes manifests
 
@@ -23,7 +24,7 @@ This practical case study implements a local analytical data platform with Pytho
 | Optimize performance | ZSTD Parquet partitions, DuckDB indexes, thread controls, and `EXPLAIN ANALYZE` plans |
 | Capture results | Versioned dashboard screenshot, plots, KPI JSON/CSV, and plans in `evidence/` |
 | Analyze performance | CSV vs Parquet vs DuckDB benchmark at 1 and 4 threads |
-| Report, code, and PPT | PDF report, documented source code, 12-slide presentation, and four-person speaking script |
+| Report, code, and PPT | PDF report, documented source code, 11-slide presentation, and four-person speaking script |
 | Bonus: real-time dataset / API | Validated FastAPI order events, durable RabbitMQ queue, idempotent consumer, and live DuckDB metrics |
 | Bonus: Kubernetes | Dashboard, API/consumer, RabbitMQ, simulator, Service, PVC, probes, HPA, and Kustomize configuration |
 | Bonus: compare execution modes | Storage-format and thread-count benchmark with an explicitly stated local-OLAP scope |
@@ -61,7 +62,7 @@ The API and consumer run in one service by default so a single process owns the 
 
 ### Windows one-click startup
 
-Double-click `Start_ECommerce_Platform.cmd`, or use the **Start E-Commerce Analytics.cmd** wrapper placed on the Desktop. The launcher prefers the complete RabbitMQ real-time stack, verifies its health, and opens the dashboard. If Docker Desktop cannot provide its Linux engine, it explicitly falls back to the historical DuckDB dashboard instead of claiming streaming is active. See [STARTUP_GUIDE.md](STARTUP_GUIDE.md) for modes, URLs, diagnostics, and shutdown instructions.
+For the classroom demonstration, start Docker Desktop and run `Start_ECommerce_From_Desktop.cmd`, or run `Start_ECommerce_Platform.ps1 -Mode Docker` from PowerShell. Docker mode is recommended because it fails clearly if RabbitMQ is unavailable instead of silently presenting the historical-only fallback as a live demonstration. See [PRESENTATION_DAY_RUNBOOK.md](PRESENTATION_DAY_RUNBOOK.md) for the exact demonstration sequence and [STARTUP_GUIDE.md](STARTUP_GUIDE.md) for all modes, URLs, diagnostics, and shutdown instructions.
 
 Run a read-only startup audit at any time:
 
