@@ -21,8 +21,8 @@ services:
     command: uvicorn src.realtime.api:app --host 0.0.0.0 --port 8000
     environment:
       RABBITMQ_URL: amqp://ecommerce:ecommerce-demo@rabbitmq:5672/%2F
-      RABBITMQ_QUEUE: ecommerce.order.events
-      REALTIME_DB_PATH: /app/artifacts/realtime.duckdb
+      RABBITMQ_QUEUE: ecommerce.order.events.presentation
+      REALTIME_DB_PATH: /app/artifacts/realtime_presentation.duckdb
       REALTIME_EMBED_CONSUMER: "true"
     ports:
       - "8001:8000"
