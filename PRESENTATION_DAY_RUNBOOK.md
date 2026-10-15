@@ -51,7 +51,7 @@ Do not add `--volumes`; keeping the volumes makes tomorrow's startup faster and 
 ## Prove that the system is live
 
 1. On the Streamlit live panel, note the current event count and revenue.
-2. Open RabbitMQ management and show the `ecommerce.order.events.presentation` queue.
+2. Open RabbitMQ management and show the `ecommerce.order.events.demo` queue.
 3. In FastAPI `/docs`, open `POST /orders`, click **Try it out**, submit one valid order, and confirm the HTTP 202 response.
 4. Explain that HTTP 202 means RabbitMQ accepted the message for asynchronous processing; it does not mean the dashboard already refreshed.
 5. Show the RabbitMQ queue activity and wait up to five seconds for Streamlit's next poll.

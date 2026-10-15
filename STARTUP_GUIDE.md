@@ -34,7 +34,7 @@ Run these from PowerShell in the project directory:
 - RabbitMQ management: `http://127.0.0.1:15672`
 - Classroom RabbitMQ login: `ecommerce` / `ecommerce-demo`
 
-The simulator publishes one order per second. Streamlit reloads its live section every five seconds.
+The classroom simulator publishes one order every two seconds for 30 minutes. Streamlit reloads its live section every five seconds. Run `docker compose --profile demo up -d simulator` if another 30-minute live demonstration is needed.
 
 ## Stop the platform
 

@@ -1,4 +1,5 @@
 from decimal import Decimal
+from uuid import uuid4
 import pytest
 from pydantic import ValidationError
 
@@ -36,6 +37,19 @@ def test_realtime_store_is_idempotent(tmp_path):
     assert metrics["live_customers"] == 1
     assert metrics["live_revenue"] == pytest.approx(225.90)
     assert store.recent(10)[0]["order_id"] == "LIVE-TEST-001"
+
+
+def test_realtime_store_batches_are_idempotent(tmp_path):
+    store = RealtimeStore(tmp_path / "realtime-batch.duckdb")
+    store.initialize()
+    first = valid_event()
+    second = valid_event().model_copy(
+        update={"order_id": "LIVE-TEST-002", "event_id": uuid4()}
+    )
+
+    assert store.insert_many([first, second]) == [True, True]
+    assert store.insert_many([first, second]) == [False, False]
+    assert store.metrics()["total_events"] == 2
 
 
 def test_realtime_payload_validation_rejects_invalid_quantity():

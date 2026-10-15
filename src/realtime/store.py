@@ -53,33 +53,54 @@ class RealtimeStore:
             con.execute(DDL)
 
     def insert(self, event: OrderEvent) -> bool:
+        return self.insert_many([event])[0]
+
+    def insert_many(self, events: list[OrderEvent]) -> list[bool]:
+        """Insert a RabbitMQ delivery batch in one DuckDB transaction.
+
+        DuckDB is an analytical database, so committing every event separately
+        creates avoidable storage amplification.  A short batch preserves
+        idempotency while keeping the live database compact and responsive.
+        """
+        if not events:
+            return []
+
+        inserted: list[bool] = []
         with self._lock, self._connect() as con:
-            row = con.execute(
-                """
-                INSERT INTO streaming.order_events (
-                    event_id, event_time, order_id, customer_id, product_id,
-                    category, quantity, unit_price, discount_pct, region,
-                    sales_channel, net_revenue
-                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-                ON CONFLICT (event_id) DO NOTHING
-                RETURNING event_id
-                """,
-                [
-                    str(event.event_id),
-                    event.event_time,
-                    event.order_id,
-                    event.customer_id,
-                    event.product_id,
-                    event.category,
-                    event.quantity,
-                    event.unit_price,
-                    event.discount_pct,
-                    event.region,
-                    event.sales_channel,
-                    event.net_revenue,
-                ],
-            ).fetchone()
-        return row is not None
+            con.execute("BEGIN TRANSACTION")
+            try:
+                for event in events:
+                    row = con.execute(
+                        """
+                        INSERT INTO streaming.order_events (
+                            event_id, event_time, order_id, customer_id, product_id,
+                            category, quantity, unit_price, discount_pct, region,
+                            sales_channel, net_revenue
+                        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                        ON CONFLICT (event_id) DO NOTHING
+                        RETURNING event_id
+                        """,
+                        [
+                            str(event.event_id),
+                            event.event_time,
+                            event.order_id,
+                            event.customer_id,
+                            event.product_id,
+                            event.category,
+                            event.quantity,
+                            event.unit_price,
+                            event.discount_pct,
+                            event.region,
+                            event.sales_channel,
+                            event.net_revenue,
+                        ],
+                    ).fetchone()
+                    inserted.append(row is not None)
+                con.execute("COMMIT")
+            except Exception:
+                con.execute("ROLLBACK")
+                raise
+        return inserted
 
     def metrics(self) -> dict:
         with self._lock, self._connect() as con:

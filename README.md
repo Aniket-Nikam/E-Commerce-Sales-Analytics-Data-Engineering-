@@ -117,7 +117,7 @@ Then open:
 - FastAPI documentation: `http://localhost:8001/docs` (container port `8000`)
 - RabbitMQ management: `http://localhost:15672` (`ecommerce` / `ecommerce-demo`)
 
-The simulator sends one new order per second. The API returns HTTP 202 after RabbitMQ confirms the event. The consumer validates it again, inserts it into `streaming.order_events`, acknowledges the message, and ignores duplicate event IDs. The live section of the dashboard refreshes every five seconds.
+The classroom simulator sends one new order every two seconds for 30 minutes (900 events), which prevents an accidentally abandoned demo from running indefinitely. The API returns HTTP 202 after RabbitMQ confirms the event. The consumer validates it again, commits short batches of up to 25 events into `streaming.order_events`, acknowledges each message only after the batch succeeds, and ignores duplicate event IDs. The live section of the dashboard refreshes every five seconds. Run `docker compose --profile demo up -d simulator` to start another 30-minute demonstration.
 
 To run a finite demonstration instead of the continuous Compose profile:
 

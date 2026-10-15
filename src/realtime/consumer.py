@@ -72,22 +72,57 @@ class ConsumerWorker:
         self._connection = pika.BlockingConnection(parameters)
         channel = self._connection.channel()
         channel.queue_declare(queue=self.settings.queue_name, durable=True)
-        channel.basic_qos(prefetch_count=25)
+        batch_size = 25
+        batch_seconds = 2.0
+        channel.basic_qos(prefetch_count=batch_size)
+        pending: list[tuple[object, object, OrderEvent]] = []
+        batch_started = time.monotonic()
 
-        def callback(ch, method, properties, body: bytes) -> None:
+        def flush() -> None:
+            nonlocal batch_started
+            if not pending:
+                return
             try:
-                status = process_message(body, self.store)
-                LOGGER.info("%s event %s", status, properties.message_id)
-                ch.basic_ack(delivery_tag=method.delivery_tag)
+                statuses = self.store.insert_many([item[2] for item in pending])
+                for (method, properties, _), inserted in zip(pending, statuses):
+                    LOGGER.info(
+                        "%s event %s",
+                        "inserted" if inserted else "duplicate",
+                        properties.message_id,
+                    )
+                    channel.basic_ack(delivery_tag=method.delivery_tag)
+            except Exception:
+                LOGGER.exception("Transient consumer batch failure")
+                for method, _, _ in pending:
+                    channel.basic_nack(delivery_tag=method.delivery_tag, requeue=True)
+                raise
+            finally:
+                pending.clear()
+                batch_started = time.monotonic()
+
+        for method, properties, body in channel.consume(
+            queue=self.settings.queue_name,
+            inactivity_timeout=0.5,
+            auto_ack=False,
+        ):
+            if self._stop.is_set():
+                break
+            if method is None:
+                if pending and time.monotonic() - batch_started >= batch_seconds:
+                    flush()
+                continue
+            try:
+                event = OrderEvent.model_validate_json(body)
+                pending.append((method, properties, event))
             except (ValidationError, ValueError, json.JSONDecodeError) as error:
                 record_dead_letter(body, error)
-                ch.basic_reject(delivery_tag=method.delivery_tag, requeue=False)
-            except Exception:
-                LOGGER.exception("Transient consumer failure")
-                ch.basic_nack(delivery_tag=method.delivery_tag, requeue=True)
+                channel.basic_reject(delivery_tag=method.delivery_tag, requeue=False)
 
-        channel.basic_consume(queue=self.settings.queue_name, on_message_callback=callback)
-        channel.start_consuming()
+            if len(pending) >= batch_size or time.monotonic() - batch_started >= batch_seconds:
+                flush()
+
+        if pending and self._connection and self._connection.is_open:
+            flush()
 
 
 def main() -> None:

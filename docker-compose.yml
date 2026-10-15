@@ -21,8 +21,8 @@ services:
     command: uvicorn src.realtime.api:app --host 0.0.0.0 --port 8000
     environment:
       RABBITMQ_URL: amqp://ecommerce:ecommerce-demo@rabbitmq:5672/%2F
-      RABBITMQ_QUEUE: ecommerce.order.events.presentation
-      REALTIME_DB_PATH: /app/artifacts/realtime_presentation.duckdb
+      RABBITMQ_QUEUE: ecommerce.order.events.demo
+      REALTIME_DB_PATH: /app/artifacts/realtime_demo.duckdb
       REALTIME_EMBED_CONSUMER: "true"
     ports:
       - "8001:8000"
@@ -54,12 +54,12 @@ services:
     command: >-
       python -m src.realtime.simulator
       --api-url http://realtime-api:8000
-      --events 0
-      --interval 1
+      --events 900
+      --interval 2
     depends_on:
       - realtime-api
     profiles: ["demo"]
-    restart: unless-stopped
+    restart: "no"
 
 volumes:
   analytics-artifacts:

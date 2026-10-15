@@ -14,6 +14,47 @@ $LogDirectory = Join-Path $ProjectRoot "results\logs"
 New-Item -ItemType Directory -Path $LogDirectory -Force | Out-Null
 $LogFile = Join-Path $LogDirectory "startup.log"
 
+function Add-StartupLogLine {
+    param([string]$Line)
+
+    # Multiple launcher windows, editors, or antivirus scanners can briefly hold
+    # startup.log.  Logging is useful evidence, but it must never block startup.
+    for ($attempt = 1; $attempt -le 3; $attempt++) {
+        $stream = $null
+        $writer = $null
+        try {
+            $stream = [System.IO.FileStream]::new(
+                $LogFile,
+                [System.IO.FileMode]::Append,
+                [System.IO.FileAccess]::Write,
+                [System.IO.FileShare]::ReadWrite
+            )
+            $writer = [System.IO.StreamWriter]::new(
+                $stream,
+                [System.Text.UTF8Encoding]::new($false)
+            )
+            $writer.WriteLine($Line)
+            $writer.Flush()
+            return
+        }
+        catch {
+            if ($attempt -lt 3) {
+                Start-Sleep -Milliseconds 150
+            }
+        }
+        finally {
+            if ($null -ne $writer) {
+                $writer.Dispose()
+            }
+            elseif ($null -ne $stream) {
+                $stream.Dispose()
+            }
+        }
+    }
+
+    Write-Warning "Could not update startup.log because another process is using it. Startup will continue."
+}
+
 function Write-Status {
     param(
         [string]$Message,
@@ -29,7 +70,7 @@ function Write-Status {
     }
     $line = "{0} [{1}] {2}" -f (Get-Date -Format "yyyy-MM-dd HH:mm:ss"), $Level, $Message
     Write-Host $line -ForegroundColor $colors[$Level]
-    Add-Content -LiteralPath $LogFile -Value $line -Encoding UTF8
+    Add-StartupLogLine -Line $line
 }
 
 function Test-CommandAvailable {
